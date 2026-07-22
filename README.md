@@ -1,5 +1,7 @@
 # Agent Telar
 
+[![CI](https://github.com/Qolzam/agent-telar/actions/workflows/ci.yml/badge.svg)](https://github.com/Qolzam/agent-telar/actions/workflows/ci.yml)
+
 Agent Telar is a hands-on project where I build an AI agent platform step by step. It starts with a streaming LLM API and grows through tools, memory, RAG, multi-agent workflows, authentication, queues, observability, microservices and Kubernetes.
 
 The long-term design target is to prepare the platform for 1 million active users. The project does not claim that scale has already been reached. Each phase adds a production-oriented pattern and a testable snapshot.
@@ -75,8 +77,8 @@ It includes:
 
 - File and URL ingest with transactional chunk writes
 - OpenAI `text-embedding-3-small` (1536-dim) + pgvector HNSW
-- Hybrid search (vector + BM25 via Reciprocal Rank Fusion)
-- Agent grounding on ingested company docs
+- Hybrid search (vector + PostgreSQL full-text via Reciprocal Rank Fusion)
+- Prompt-instructed agent grounding on ingested company docs
 
 ```text
 Upload -> chunk -> embed -> Postgres/pgvector

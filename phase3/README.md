@@ -1,10 +1,10 @@
 # Phase 3 — RAG Knowledge Engine
 
-Adds document ingest, embeddings (`text-embedding-3-small`), pgvector storage, hybrid search (vector + BM25 / RRF), and a fifth agent tool: `search_knowledge_base`.
+Adds document ingest, embeddings (`text-embedding-3-small`), pgvector storage, hybrid search (vector + PostgreSQL `ts_rank` / RRF), and a fifth agent tool: `search_knowledge_base`.
 
 ```
 Upload/URL → chunk → embed → Postgres/pgvector
-Query → embed → hybridSearch → agent tool → grounded SSE answer
+Query → embed → hybridSearch → agent tool → SSE answer (prompt-instructed grounding)
 ```
 
 ## What's included

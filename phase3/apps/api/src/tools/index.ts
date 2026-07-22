@@ -1,6 +1,7 @@
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { vectorStore } from '../services/vectorstore.service';
+import { evaluateSafeMath } from '../lib/safe-math';
 
 // ─── Weather Tool ────────────────────────────────────────────────────────────
 
@@ -51,12 +52,7 @@ export const calculatorTool = new DynamicStructuredTool({
   }),
   func: async ({ expression }) => {
     try {
-      // Safe-ish eval via Function — replace with mathjs in production for full sandboxing
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      const result = Function('return ' + expression)();
-      if (typeof result !== 'number' || isNaN(result)) {
-        return JSON.stringify({ error: 'Invalid expression' });
-      }
+      const result = evaluateSafeMath(expression);
       return JSON.stringify({ expression, result });
     } catch {
       return JSON.stringify({ error: 'Could not evaluate expression' });
@@ -131,7 +127,7 @@ export const knowledgeBaseTool = new DynamicStructuredTool({
       sources: results.map(r => ({
         content: r.content,
         source: r.doc_name,
-        relevance: (Number(r.score) * 100).toFixed(1) + '%',
+        rrfScore: Number(r.score),
       })),
     });
   },

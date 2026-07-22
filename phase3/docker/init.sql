@@ -24,6 +24,6 @@ CREATE INDEX IF NOT EXISTS chunks_embedding_hnsw
 ON document_chunks USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 
--- Full-text index for hybrid BM25 + vector search
+-- Full-text index for hybrid Postgres FTS (ts_rank) + vector search
 CREATE INDEX IF NOT EXISTS chunks_fts
 ON document_chunks USING gin(to_tsvector('english', content));

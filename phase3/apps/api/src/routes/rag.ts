@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
+import fs from 'fs/promises';
 import { vectorStore } from '../services/vectorstore.service';
 import { loadDocument } from '../services/loader.service';
 
@@ -12,10 +13,14 @@ const upload = multer({ dest: '/tmp/', limits: { fileSize: 10 * 1024 * 1024 } })
 ragRouter.post('/ingest/file', upload.single('file'), async (req: Request, res: Response) => {
   try {
     if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return; }
-    const { content, type } = await loadDocument(req.file.path);
+    const { content, type } = await loadDocument(req.file.path, req.file.originalname);
     res.json(await vectorStore.ingestDocument(req.file.originalname, content, req.file.path, type));
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : 'Ingest failed' });
+  } finally {
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch(() => undefined);
+    }
   }
 });
 

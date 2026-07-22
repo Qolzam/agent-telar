@@ -46,16 +46,27 @@ export const vectorStore = {
     return rows as { content: string; doc_name: string; chunk_index: number; similarity: number }[];
   },
 
-  // Hybrid: vector cosine similarity + BM25 keyword via Reciprocal Rank Fusion
+  // Hybrid: vector cosine + Postgres FTS (ts_rank), fused with Reciprocal Rank Fusion
   async hybridSearch(query: string, topK = 5) {
     const vec = '[' + (await embedQuery(query)).join(',') + ']';
     const { rows } = await pool.query(
-      `WITH v AS (SELECT id, embedding<=>$1::vector d FROM document_chunks ORDER BY d LIMIT 20),
-            k AS (SELECT id, ts_rank(to_tsvector('english',content),plainto_tsquery('english',$2)) s
-                  FROM document_chunks
-                  WHERE to_tsvector('english',content)@@plainto_tsquery('english',$2) LIMIT 20)
+      `WITH v AS (
+         SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> $1::vector) AS rank
+         FROM document_chunks
+         ORDER BY embedding <=> $1::vector
+         LIMIT 20
+       ),
+       k AS (
+         SELECT id, ROW_NUMBER() OVER (
+           ORDER BY ts_rank(to_tsvector('english', content), plainto_tsquery('english', $2)) DESC
+         ) AS rank
+         FROM document_chunks
+         WHERE to_tsvector('english', content) @@ plainto_tsquery('english', $2)
+         ORDER BY ts_rank(to_tsvector('english', content), plainto_tsquery('english', $2)) DESC
+         LIMIT 20
+       )
        SELECT dc.content, d.name doc_name, dc.chunk_index,
-              COALESCE(1.0/(60+v.d),0)+COALESCE(1.0/(60+k.s),0) score
+              COALESCE(1.0/(60+v.rank),0)+COALESCE(1.0/(60+k.rank),0) score
        FROM (SELECT COALESCE(v.id,k.id) id FROM v FULL OUTER JOIN k ON v.id=k.id) ids
        JOIN document_chunks dc ON dc.id=ids.id
        JOIN documents d ON d.id=dc.document_id
