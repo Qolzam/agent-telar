@@ -1,0 +1,45 @@
+# ─── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Environment & secrets (never commit real keys) ─────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+!.env.example
+
+# ─── Build & test output ──────────────────────────────────────────────────────
+dist/
+build/
+coverage/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# ─── Logs & local test artifacts ──────────────────────────────────────────────
+*.log
+test-phase*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Tooling caches ───────────────────────────────────────────────────────────
+.vite/
+.turbo/
+.cache/
+.eslintcache
+.nyc_output/
+
+# ─── OS & editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ─── Docker local overrides ───────────────────────────────────────────────────
+docker/.env

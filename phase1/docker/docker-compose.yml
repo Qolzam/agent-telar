@@ -1,3 +1,5 @@
+name: agenttelar-phase1
+
 services:
   api:
     build:

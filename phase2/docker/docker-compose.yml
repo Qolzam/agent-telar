@@ -1,0 +1,68 @@
+name: agenttelar-phase2
+
+services:
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    env_file:
+      - ../apps/api/.env
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      GROQ_MODEL: llama-3.3-70b-versatile
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgres://agenttelar:secret@postgres:5432/agenttelar
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      ALLOWED_ORIGINS: http://localhost:5173
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000/health').then(r => process.exit(r.ok ? 0 : 1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: agenttelar
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: agenttelar
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U agenttelar']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -65,7 +65,9 @@ cd docker
 docker compose up --build
 ```
 
-The API listens on `http://localhost:3000`. Compose reads `apps/api/.env` for `GROQ_API_KEY`.
+The Compose project is named `agenttelar-phase1` so its volumes do not collide with later phases. The API listens on `http://localhost:3000`. Compose reads `apps/api/.env` for `GROQ_API_KEY`.
+
+When you move to Phase 2, stop this stack first (`docker compose down` here) so `:3000` is free.
 
 ## API
 
@@ -149,6 +151,8 @@ Pass `--no-rebuild` to skip image rebuild on subsequent runs.
 **`429 Too many requests`** — local rate limit hit. Wait for the window to reset (`RATE_LIMIT_WINDOW_MS`) or raise `RATE_LIMIT_MAX_REQUESTS` in `.env`.
 
 **Docker compose fails to connect** — ensure Docker Desktop is running before `docker compose up`.
+
+**Moving to Phase 2 / port already allocated** — run `docker compose down` in this `docker/` folder first. Volumes for `agenttelar-phase1` stay on disk; you only release `:3000`.
 
 ## Security notes
 
