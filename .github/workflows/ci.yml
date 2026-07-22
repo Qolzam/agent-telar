@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  unit-tests:
+    name: Phase ${{ matrix.phase }} unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        phase: [1, 2, 3]
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: phase${{ matrix.phase }}/apps/api/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: phase${{ matrix.phase }}/apps/api
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests
+        working-directory: phase${{ matrix.phase }}/apps/api
+        run: pnpm exec vitest run
