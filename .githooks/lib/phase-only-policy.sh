@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Shared path policy for the AgentForge monorepo.
-# Allowed publish paths: phase<N>/ trees, root README, plus repo-root tooling (scripts/, .githooks/).
+# Allowed publish paths: phase<N>/ trees, root README/LICENSE, plus tooling (scripts/, .githooks/).
 
 is_allowed_path() {
   local file="$1"
   [[ "$file" == "README.md" ]] && return 0
+  [[ "$file" == "LICENSE" ]] && return 0
   [[ "$file" =~ ^phase[0-9]+/ ]] && return 0
   [[ "$file" =~ ^\.githooks/ ]] && return 0
   [[ "$file" =~ ^scripts/ ]] && return 0
@@ -27,6 +28,7 @@ phase_only_check_files() {
     echo "ERROR: Only these paths may be committed or pushed:"
     echo "         phase<N>/   (phase1/, phase2/, ...)"
     echo "         README.md   (repo overview / publish status)"
+    echo "         LICENSE     (MIT license)"
     echo "         scripts/    (repo tooling)"
     echo "         .githooks/  (git hook enforcement)"
     echo ""
